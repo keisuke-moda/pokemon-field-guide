@@ -263,12 +263,6 @@ const setEV = (statName: string, raw: number) => {
   ivCalc.value[statName]!.ev = Math.max(0, Math.min(252, 510 - otherTotal, raw))
 }
 
-const getMaxEV = (statName: string): number => {
-  const otherTotal = Object.entries(ivCalc.value)
-    .filter(([k]) => k !== statName)
-    .reduce((sum, [, v]) => sum + (v?.ev || 0), 0)
-  return Math.min(252, Math.max(0, 510 - otherTotal))
-}
 
 // ナビゲーション
 const prevId = computed(() => Math.max(1, parseInt(id.value) - 1))
@@ -402,10 +396,11 @@ const MAX_BASE_STAT = 255
               :class="{ hidden: ab.is_hidden }"
               @click="openAbilityModal(ab.ability.name)"
             >
-              <span class="ability-name">{{ getAbilityJaName(ab.ability.name) }}</span>
+              <span class="ability-name">
+                {{ getAbilityJaName(ab.ability.name) }}
+                <span v-if="ab.is_hidden" class="hidden-tag">隠</span>
+              </span>
               <span class="ability-en">{{ capitalize(ab.ability.name) }}</span>
-              <span v-if="ab.is_hidden" class="hidden-tag">かくしとくせい</span>
-              <span class="ability-arrow">詳細 ›</span>
             </li>
           </ul>
         </section>
@@ -458,8 +453,8 @@ const MAX_BASE_STAT = 255
                 </div>
                 <div class="slider-row">
                   <span class="slider-label">努力値</span>
-                  <input type="number" :value="ivCalc[stat.stat.name]!.ev" @change="setEV(stat.stat.name, +($event.target as HTMLInputElement).value)" min="0" :max="getMaxEV(stat.stat.name)" class="num-input" />
-                  <input type="range" :value="ivCalc[stat.stat.name]!.ev" @input="setEV(stat.stat.name, +($event.target as HTMLInputElement).value)" min="0" :max="getMaxEV(stat.stat.name)" step="4" class="slider" :style="{ '--pct': `${getMaxEV(stat.stat.name) > 0 ? (ivCalc[stat.stat.name]!.ev / getMaxEV(stat.stat.name)) * 100 : 0}%`, '--color': STAT_COLORS[stat.stat.name] }" />
+                  <input type="number" :value="ivCalc[stat.stat.name]!.ev" @change="setEV(stat.stat.name, +($event.target as HTMLInputElement).value)" min="0" max="252" class="num-input" />
+                  <input type="range" :value="ivCalc[stat.stat.name]!.ev" @input="setEV(stat.stat.name, +($event.target as HTMLInputElement).value)" min="0" max="252" step="2" class="slider" :style="{ '--pct': `${(ivCalc[stat.stat.name]!.ev / 252) * 100}%`, '--color': STAT_COLORS[stat.stat.name] }" />
                   <span class="v-badge-wrap"><span v-if="ivCalc[stat.stat.name]!.ev >= 252" class="max-badge">MAX</span></span>
                 </div>
               </div>
@@ -691,10 +686,9 @@ const MAX_BASE_STAT = 255
 .ability-item { display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: #f8f9fa; border-radius: 10px; border-left: 4px solid var(--primary, #cc0000); cursor: pointer; transition: background 0.15s, transform 0.1s; }
 .ability-item:hover { background: #eef0f2; transform: translateX(2px); }
 .ability-item.hidden { border-left-color: #9c27b0; }
-.ability-name { font-weight: 700; color: #222; font-size: 0.95rem; }
-.ability-en { font-size: 0.78rem; color: #aaa; }
-.hidden-tag { font-size: 0.72rem; background: #9c27b0; color: white; padding: 2px 8px; border-radius: 8px; font-weight: 600; }
-.ability-arrow { margin-left: auto; font-size: 0.8rem; color: #aaa; white-space: nowrap; }
+.ability-name { font-weight: 700; color: #222; font-size: 0.95rem; display: flex; align-items: center; gap: 5px; }
+.ability-en { font-size: 0.78rem; color: #aaa; margin-left: auto; }
+.hidden-tag { font-size: 0.62rem; background: #9c27b0; color: white; padding: 1px 5px; border-radius: 4px; font-weight: 700; vertical-align: middle; }
 
 /* ========== モーダル共通 ========== */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 24px; backdrop-filter: blur(2px); }
