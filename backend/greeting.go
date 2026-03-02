@@ -4,8 +4,12 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
+	"strings"
 	"time"
 
+	echoadapter "github.com/awslabs/aws-lambda-go-api-proxy/echo"
+	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -26,10 +30,16 @@ func proxyTo(c echo.Context, url string) error {
 	return err
 }
 
-func main() {
+func newEcho() *echo.Echo {
 	e := echo.New()
+
+	allowOrigins := []string{"http://localhost:3000", "http://localhost:3001", "http://localhost:3002"}
+	if env := os.Getenv("ALLOW_ORIGINS"); env != "" {
+		allowOrigins = strings.Split(env, ",")
+	}
+
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"http://localhost:3000", "http://localhost:3001", "http://localhost:3002"},
+		AllowOrigins: allowOrigins,
 		AllowMethods: []string{http.MethodGet},
 	}))
 
@@ -51,5 +61,15 @@ func main() {
 		return proxyTo(c, fmt.Sprintf("%s/move/%s", pokeAPIBase, c.Param("name")))
 	})
 
-	e.Logger.Fatal(e.Start(":8080"))
+	return e
+}
+
+func main() {
+	e := newEcho()
+	if os.Getenv("AWS_LAMBDA_FUNCTION_NAME") != "" {
+		adapter := echoadapter.NewV2(e)
+		lambda.Start(adapter.ProxyWithContext)
+	} else {
+		e.Logger.Fatal(e.Start(":8080"))
+	}
 }
