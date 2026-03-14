@@ -335,11 +335,13 @@ const MAX_BASE_STAT = 255
         <section class="card">
           <h2 class="section-title">種族値</h2>
           <div class="stats-list">
-            <div v-for="stat in stats" :key="stat.stat.name" class="stat-row">
+            <div v-for="stat in stats" :key="stat.stat.name" class="stat-row" :class="{ 'stat-row-high': stat.base_stat >= 100 }">
               <span class="stat-name">{{ STAT_NAMES_JA[stat.stat.name] ?? stat.stat.name }}</span>
-              <span class="stat-value">{{ stat.base_stat }}</span>
+              <span class="stat-value" :class="{ 'stat-value-high': stat.base_stat >= 100 }">
+                {{ stat.base_stat }}<span v-if="stat.base_stat >= 100" class="stat-high-badge">★</span>
+              </span>
               <div class="stat-bar-bg">
-                <div class="stat-bar" :style="{ width: `${(stat.base_stat / MAX_BASE_STAT) * 100}%`, background: STAT_COLORS[stat.stat.name] ?? '#aaa' }" />
+                <div class="stat-bar" :class="{ 'stat-bar-high': stat.base_stat >= 100 }" :style="{ width: `${(stat.base_stat / MAX_BASE_STAT) * 100}%`, background: STAT_COLORS[stat.stat.name] ?? '#aaa' }" />
               </div>
             </div>
             <div class="stat-row total-row">
@@ -578,6 +580,10 @@ const MAX_BASE_STAT = 255
 .stat-bar { height: 100%; border-radius: 5px; transition: width 0.4s ease; }
 .total-row .stat-name { font-weight: 700; color: #333; }
 .total-row .stat-value { font-size: 1rem; }
+.stat-row-high { background: linear-gradient(90deg, #fffbea, transparent); border-radius: 6px; margin: 0 -6px; padding: 0 6px; }
+.stat-value-high { color: #d4900a; font-weight: 800; }
+.stat-high-badge { font-size: 0.65rem; color: #f5a623; margin-left: 2px; vertical-align: super; }
+.stat-bar-high { box-shadow: 0 0 6px 1px rgba(245, 166, 35, 0.5); }
 
 /* ========== 実数値計算機 ========== */
 .calc-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
