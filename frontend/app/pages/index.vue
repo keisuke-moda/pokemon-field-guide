@@ -127,18 +127,18 @@ const cardStyle = (id: number) => {
 </script>
 
 <template>
-  <div class="page">
+  <div class="min-h-screen bg-[#f0f2f5]">
     <!-- ヘッダー -->
-    <header class="header">
-      <div class="header-inner">
-        <div class="logo">
-          <span class="logo-icon">◎</span>
-          <h1>ポケモン図鑑</h1>
+    <header class="bg-[#cc0000] text-white shadow-md sticky top-0 z-[100]">
+      <div class="max-w-[1200px] mx-auto px-6 pt-[14px] pb-[10px] flex items-center gap-5 flex-wrap">
+        <div class="flex items-center gap-[10px]">
+          <span class="text-[1.8rem] [filter:drop-shadow(0_0_4px_rgba(255,255,255,0.5))]">◎</span>
+          <h1 class="text-2xl font-bold tracking-wide m-0 whitespace-nowrap">ポケモン図鑑</h1>
         </div>
-        <div class="search-wrap">
+        <div class="flex-1 min-w-[200px]">
           <input
             v-model="searchQuery"
-            class="search-input"
+            class="w-full py-[9px] px-4 rounded-3xl border-2 border-white/40 bg-white/15 text-white text-[0.95rem] outline-none transition-all placeholder:text-white/70 focus:border-white focus:bg-white/25"
             placeholder="名前で検索（例: フシギダネ, bulbasaur）"
             type="search"
           />
@@ -146,13 +146,13 @@ const cardStyle = (id: number) => {
       </div>
 
       <!-- 世代フィルター -->
-      <div class="gen-filter-wrap">
-        <div class="gen-filter">
+      <div class="max-w-[1200px] mx-auto px-6 pb-[10px] overflow-x-auto">
+        <div class="flex gap-[6px] whitespace-nowrap">
           <button
             v-for="(gen, i) in GENERATIONS"
             :key="i"
-            class="gen-btn"
-            :class="{ active: selectedGenIndex === i }"
+            class="px-3 py-[5px] rounded-2xl border-2 border-white/40 bg-transparent text-white/85 text-[0.8rem] font-semibold cursor-pointer transition-all whitespace-nowrap hover:border-white hover:text-white"
+            :class="{ 'bg-white !text-[#cc0000] border-white': selectedGenIndex === i }"
             @click="selectedGenIndex = i"
           >
             {{ gen.short }}
@@ -161,45 +161,45 @@ const cardStyle = (id: number) => {
       </div>
     </header>
 
-    <main class="main">
+    <main class="max-w-[1200px] mx-auto py-5 px-6">
       <!-- ローディング -->
-      <div v-if="isLoading" class="loading">
-        <div class="spinner" />
+      <div v-if="isLoading" class="flex flex-col items-center justify-center py-20 text-[#666] gap-4">
+        <div class="w-11 h-11 border-4 border-[#ddd] border-t-[#cc0000] rounded-full animate-spin" />
         <p>読み込み中...</p>
       </div>
 
       <template v-else>
-        <p class="result-count">
+        <p class="text-[#666] text-[0.88rem] mb-[14px]">
           <strong>{{ filtered.length }}</strong> 匹
           <span v-if="searchQuery.trim()">（「{{ searchQuery }}」の検索結果）</span>
           <span v-else>— {{ GENERATIONS[selectedGenIndex]?.label }}</span>
         </p>
 
-        <div v-if="filtered.length === 0" class="no-result">
+        <div v-if="filtered.length === 0" class="text-center py-[60px] text-[#999] text-base">
           該当するポケモンが見つかりませんでした。
         </div>
 
-        <div v-else class="grid">
+        <div v-else class="grid grid-cols-[repeat(auto-fill,minmax(148px,1fr))] gap-[14px]">
           <NuxtLink
             v-for="item in currentPageItems"
             :key="item.url"
             :to="`/pokemon/${getIdFromUrl(item.url)}`"
-            class="card"
+            class="flex flex-col items-center pt-[14px] px-[10px] pb-[10px] rounded-2xl border-2 border-transparent no-underline text-[#333] bg-white transition-all cursor-pointer hover:-translate-y-1 hover:shadow-xl"
             :style="cardStyle(getIdFromUrl(item.url))"
           >
-            <div class="card-number">#{{ padId(getIdFromUrl(item.url)) }}</div>
+            <div class="text-[0.7rem] text-[#aaa] font-semibold self-start">#{{ padId(getIdFromUrl(item.url)) }}</div>
             <img
               :src="getSpriteUrl(getIdFromUrl(item.url))"
               :alt="item.name"
-              class="card-sprite"
+              class="w-[88px] h-[88px] object-contain [image-rendering:pixelated]"
               loading="lazy"
             />
-            <div class="card-name">{{ getDisplayName(getIdFromUrl(item.url), item.name) }}</div>
-            <div class="card-types">
+            <div class="text-[0.85rem] font-bold text-center mt-1 mb-[6px] text-[#222]">{{ getDisplayName(getIdFromUrl(item.url), item.name) }}</div>
+            <div class="flex gap-1 flex-wrap justify-center min-h-5">
               <span
                 v-for="type in getTypes(getIdFromUrl(item.url))"
                 :key="type"
-                class="type-badge"
+                class="inline-block px-2 py-[2px] rounded-[10px] text-[0.68rem] font-bold text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.3)]"
                 :style="{ background: TYPE_COLORS[type] ?? '#A8A878' }"
               >
                 {{ TYPE_NAMES_JA[type] ?? type }}
@@ -208,228 +208,20 @@ const cardStyle = (id: number) => {
           </NuxtLink>
         </div>
 
-        <div v-if="totalPages > 1" class="pagination">
-          <button class="page-btn" :disabled="page <= 1" @click="page--">← 前へ</button>
-          <span class="page-info">{{ page }} / {{ totalPages }}</span>
-          <button class="page-btn" :disabled="page >= totalPages" @click="page++">次へ →</button>
+        <div v-if="totalPages > 1" class="flex items-center justify-center gap-4 mt-9 pb-10">
+          <button
+            class="py-[9px] px-[22px] rounded-3xl border-2 border-[#cc0000] bg-white text-[#cc0000] text-[0.9rem] font-semibold cursor-pointer transition-all enabled:hover:bg-[#cc0000] enabled:hover:text-white disabled:border-[#ccc] disabled:text-[#ccc] disabled:cursor-not-allowed"
+            :disabled="page <= 1"
+            @click="page--"
+          >← 前へ</button>
+          <span class="text-[0.9rem] text-[#555] min-w-[70px] text-center">{{ page }} / {{ totalPages }}</span>
+          <button
+            class="py-[9px] px-[22px] rounded-3xl border-2 border-[#cc0000] bg-white text-[#cc0000] text-[0.9rem] font-semibold cursor-pointer transition-all enabled:hover:bg-[#cc0000] enabled:hover:text-white disabled:border-[#ccc] disabled:text-[#ccc] disabled:cursor-not-allowed"
+            :disabled="page >= totalPages"
+            @click="page++"
+          >次へ →</button>
         </div>
       </template>
     </main>
   </div>
 </template>
-
-<style scoped>
-.page {
-  min-height: 100vh;
-  background: #f0f2f5;
-}
-
-/* ヘッダー */
-.header {
-  background: #cc0000;
-  color: white;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.header-inner {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 14px 24px 10px;
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.logo-icon { font-size: 1.8rem; filter: drop-shadow(0 0 4px rgba(255,255,255,0.5)); }
-
-.logo h1 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  margin: 0;
-  white-space: nowrap;
-}
-
-.search-wrap { flex: 1; min-width: 200px; }
-
-.search-input {
-  width: 100%;
-  padding: 9px 16px;
-  border-radius: 24px;
-  border: 2px solid rgba(255,255,255,0.4);
-  background: rgba(255,255,255,0.15);
-  color: white;
-  font-size: 0.95rem;
-  outline: none;
-  transition: border-color 0.2s, background 0.2s;
-}
-.search-input::placeholder { color: rgba(255,255,255,0.7); }
-.search-input:focus { border-color: white; background: rgba(255,255,255,0.25); }
-
-/* 世代フィルター */
-.gen-filter-wrap {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 24px 10px;
-  overflow-x: auto;
-}
-
-.gen-filter {
-  display: flex;
-  gap: 6px;
-  white-space: nowrap;
-}
-
-.gen-btn {
-  padding: 5px 12px;
-  border-radius: 16px;
-  border: 2px solid rgba(255,255,255,0.4);
-  background: transparent;
-  color: rgba(255,255,255,0.85);
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s;
-  white-space: nowrap;
-}
-.gen-btn:hover { border-color: white; color: white; }
-.gen-btn.active {
-  background: white;
-  color: #cc0000;
-  border-color: white;
-}
-
-/* メイン */
-.main {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px 24px;
-}
-
-.loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 80px 0;
-  color: #666;
-  gap: 16px;
-}
-
-.spinner {
-  width: 44px;
-  height: 44px;
-  border: 4px solid #ddd;
-  border-top-color: #cc0000;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.result-count {
-  color: #666;
-  font-size: 0.88rem;
-  margin-bottom: 14px;
-}
-
-.no-result {
-  text-align: center;
-  padding: 60px 0;
-  color: #999;
-  font-size: 1rem;
-}
-
-/* グリッド */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
-  gap: 14px;
-}
-
-/* カード */
-.card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 14px 10px 10px;
-  border-radius: 16px;
-  border: 2px solid transparent;
-  text-decoration: none;
-  color: #333;
-  background: white;
-  transition: transform 0.15s, box-shadow 0.15s;
-  cursor: pointer;
-}
-.card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
-
-.card-number { font-size: 0.7rem; color: #aaa; font-weight: 600; align-self: flex-start; }
-
-.card-sprite {
-  width: 88px;
-  height: 88px;
-  object-fit: contain;
-  image-rendering: pixelated;
-}
-
-.card-name {
-  font-size: 0.85rem;
-  font-weight: 700;
-  text-align: center;
-  margin: 4px 0 6px;
-  color: #222;
-}
-
-.card-types {
-  display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
-  justify-content: center;
-  min-height: 20px;
-}
-
-.type-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 0.68rem;
-  font-weight: 700;
-  color: white;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-}
-
-/* ページネーション */
-.pagination {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  margin-top: 36px;
-  padding-bottom: 40px;
-}
-
-.page-btn {
-  padding: 9px 22px;
-  border-radius: 24px;
-  border: 2px solid #cc0000;
-  background: white;
-  color: #cc0000;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-}
-.page-btn:hover:not(:disabled) { background: #cc0000; color: white; }
-.page-btn:disabled { border-color: #ccc; color: #ccc; cursor: not-allowed; }
-
-.page-info { font-size: 0.9rem; color: #555; min-width: 70px; text-align: center; }
-</style>
